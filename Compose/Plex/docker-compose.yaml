@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  plex:
+    container_name: plex
+    hostname: FALCON
+    restart: always
+
+    build:
+      context: ../../DockerFiles/Plex/
+      dockerfile: Dockerfile
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tank/backup/Services/Config/Plex:/config
+      - /tank/one/TV-Series:/media/TV-Series-1
+      - /tank/two/TV-Series:/media/TV-Series-2
+      - /tank/two/Movies:/media/Movies-2
+      - /tank/one/Calibration:/media/Calibration
+      - /tmp:/transcode
+
+    ports:
+      - 32400:32400
+      - 1900:1900/udp
+      - 3005:3005/tcp
+      - 5353:5353/udp
+      - 8324:8324/tcp
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+      - 32469:32469/tcp
+
+  plexpy:
+    image: linuxserver/plexpy:latest
+    container_name: plexpy
+    hostname: FALCON
+    restart: always
+
+    depends_on:
+      - plex
+
+    environment:
+      - PGID=797
+      - PUID=112
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /tank/backup/Services/Config/PlexPy:/config
+      - /tank/backup/Services/Config/Plex/Plex\ Media\ Server/Logs:/logs:ro
+
+    ports:
+      - 8089:8181

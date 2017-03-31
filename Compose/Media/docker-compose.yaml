@@ -1,0 +1,138 @@
+version: '3'
+
+services:
+  sabnzbd:
+    image: linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    hostname: FALCON
+#    restart: always
+
+#    build:
+#      context: ../../DockerFiles/SABnzbd/
+#      dockerfile: Dockerfile
+
+    environment:
+      - PGID=100
+      - PUID=1000
+      - TZ=Europe/Berlin
+
+    volumes:
+      - /tank/backup/Services/Config/SABnzbd:/config
+      - /tank/dl/Downloads:/downloads
+      - /tank/one/TV-Series:/media/TV-Series-1:ro
+      - /tank/two/TV-Series:/media/TV-Series-2:ro
+      - /tank/two/Movies:/media/Movies-2
+      - /tank/two/Games:/media/Games-2
+      - /etc/localtime:/etc/localtime:ro
+
+    ports:
+      - 8081:8080
+
+  deluge:
+    image: linuxserver/deluge:latest
+    container_name: deluge
+    hostname: FALCON
+
+    environment:
+      - PGID=100
+      - PUID=1000
+      - TZ=Europe/Berlin
+
+    volumes:
+      - /tank/dl/Downloads:/downloads
+      - /tank/backup/Services/Config/Deluge:/config
+      - /tank/two/Movies:/media/Movies-2
+      - /etc/localtime:/etc/localtime:ro
+
+    ports:
+      - 8084:8112
+      - 58846:58846/tcp
+      - 58846:58846/udp
+      - 58946:58946/tcp
+      - 58946:58946/udp
+      - 56900-56999:56900-56999/tcp
+      - 56900-56999:56900-56999/udp
+
+  jackett:
+    image: linuxserver/jackett:latest
+    container_name: jackett
+    hostname: FALCON
+
+    environment:
+      - PGID=100
+      - PUID=1000
+      - TZ=Europe/Berlin
+
+    volumes:
+      - /tank/backup/Services/Config/Jackett:/config
+
+    ports:
+      - 8085:9117
+
+#  cardigann:
+#    image: linuxserver/cardigann:latest
+#    container_name: cardigann
+#    hostname: FALCON
+#
+#    environment:
+#      - PGID=100
+#      - PUID=1000
+#      - TZ=Europe/Berlin
+#
+#    volumes:
+#      - /tank/backup/Services/Config/Cardigann:/config
+#
+#    ports:
+#      - 8085:5060
+
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    hostname: FALCON
+
+    depends_on:
+      - jackett
+      - sabnzbd
+      - deluge
+
+    environment:
+      - PGID=100
+      - PUID=1000
+      - TZ=Europe/Berlin
+
+    volumes:
+      - /dev/rtc:/dev/rtc:ro
+      - /tank/backup/Services/Config/Sonarr:/config
+      - /tank/one/TV-Series:/media/TV-Series-1
+      - /tank/two/TV-Series:/media/TV-Series-2
+      - /tank/one/TV-Series/_SonarrRecycle:/recycle
+      - /tank/dl/Downloads:/downloads
+
+    ports:
+      - 8082:8989
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    hostname: FALCON
+
+    depends_on:
+      - jackett
+      - sabnzbd
+      - deluge
+
+    environment:
+      - PGID=100
+      - PUID=1000
+      - TZ=Europe/Berlin
+
+    volumes:
+      - /dev/rtc:/dev/rtc:ro
+      - /tank/backup/Services/Config/Radarr:/config
+      - /tank/dl/Downloads:/downloads
+      - /tank/two/Movies:/media/Movies-2
+      - /tank/two/Movies/_RadarrRecycle:/recycle
+
+    ports:
+      - 8083:7878
+

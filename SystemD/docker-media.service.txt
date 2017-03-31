@@ -1,0 +1,13 @@
+[Unit]
+Description=Media services, usenet and torrents
+Requires=docker.service zfs-mount.service
+After=docker.service zfs-mount.service
+
+[Service]
+Restart=always
+ExecStartPre=/bin/sh -c 'cd /tank/backup/Services/Compose/Media && /usr/local/bin/docker-compose pull'
+ExecStart=/usr/local/bin/docker-compose -f /tank/backup/Services/Compose/Media/docker-compose.yaml up --force-recreate --build --remove-orphans
+ExecStop=/usr/local/bin/docker-compose -f /tank/backup/Services/Compose/Media/docker-compose.yaml stop
+
+[Install]
+WantedBy=local.target
