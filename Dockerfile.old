@@ -1,6 +1,0 @@
-FROM wernight/plex-media-server:autoupdate
-MAINTAINER Marc Bridner <marc@bridner.com>
-
-RUN usermod -a -G users plex
-ADD Chromecast.xml /usr/lib/plexmediaserver/Resources/Profiles/Chromecast.xml
-
